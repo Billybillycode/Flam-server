@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
 const textileSchema = new Schema({
+   
     image: String,
     name: String,
     ref: String,
