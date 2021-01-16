@@ -38,15 +38,18 @@ app.use(function (req, res, next) {
   next();
 });
 
-const exercisesRouter = require('./routes/exercises');
-
-
- app.use("/api/textiles", require("./routes/Textile"));
- app.use('/exercises', exercisesRouter);
-
+//Routes
+const indexRouter = require("./routes/index");
 const authRouter = require("./routes/auth");
-
+const usersRouter = require("./routes/user");
+const itemRouter = require("./routes/textiles");
+//
+//
+app.use("/", indexRouter);
 app.use("/api/auth", authRouter);
+app.use("/api/user", usersRouter);
+app.use("/api/textiles", itemRouter);
+
 
 // 404 Middleware
 app.use((req, res, next) => {

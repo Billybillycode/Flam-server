@@ -1,10 +1,11 @@
 const express = require("express");
 const router = express.Router();
 const Textile = require("../models/Textile");
+const uploader = require("../config/cloudinary");
+const requireAuth = require("../middlewares/requireAuth");
 
-// http://localhost:4000/api/textiles
+// Get all the textiles
 router.get("/", (req, res, next) => {
-  // Get all the textiles
   Textile.find()
     .then((textileDocuments) => {
       res.status(200).json(textileDocuments);
@@ -14,7 +15,7 @@ router.get("/", (req, res, next) => {
     });
 });
 
-// http://localhost:4000/api/textiles/{some-id}
+//Get one textile
 router.get("/:id", (req, res, next) => {
   //Get one specific textile
   Textile.findById(req.params.id)
@@ -26,34 +27,65 @@ router.get("/:id", (req, res, next) => {
     });
 });
 
-// http://localhost:4000/api/textiles/{some-id}
-router.patch("/:id", (req, res, next) => {
-  // Update a specific textile
-  Textile.findByIdAndUpdate(req.params.id, req.body, { new: true })
-    .then((textileDocument) => {
-      res.status(200).json(textileDocument);
-      // There's a trap !
+// Update a specific textile
+router.patch(
+  "/:id",
+  requireAuth,
+  uploader.single("image"),
+  (req, res, next) => {
+    const item = { ...req.body };
+    console.log(item);
+    Textile.findById(req.params.id)
+      .then((itemDocument) => {
+        if (!itemDocument)
+          return res.status(404).json({ message: "Item not found" });
+        if (itemDocument.id_user.toString() !== req.session.currentUser) {
+          return res
+            .status(403)
+            .json({ message: "You are not allowed to update this document" });
+        }
+
+        if (req.file) {
+          item.image = req.file.secure_url;
+        }
+
+        Textile.findByIdAndUpdate(req.params.id, item, { new: true })
+          .populate("id_user")
+          .then((updatedDocument) => {
+            return res.status(200).json(updatedDocument);
+          })
+          .catch(next);
+      })
+      .catch(next);
+  }
+);
+
+// create textile
+router.post("/", requireAuth, uploader.single("image"), (req, res, next) => {
+  const updateValues = { ...req.body };
+
+  if (req.file) {
+    updateValues.image = req.file.path;
+  }
+
+  updateValues.id_user = req.session.currentUser;
+
+  Textile.create(updateValues)
+    .then((plantDocument) => {
+      textileDocument
+        .populate("id_user")
+        .execPopulate() 
+        .then((plant) => {
+          console.log("here");
+          res.status(201).json(textile); 
+        })
+        .catch(next);
     })
-    .catch((error) => {
-      next(error);
-    });
+    .catch(next);
 });
 
-// http://localhost:4000/api/textiles
-router.post("/", (req, res, next) => {
-  // Create a textile
-  Textile.create(req.body)
-    .then((textileDocument) => {
-      res.status(201).json(textileDocument);
-    })
-    .catch((error) => {
-      next(error);
-    });
-});
-
-// http://localhost:4000/api/textiles/{some-id}
+// Delete textile
 router.delete("/:id", (req, res, next) => {
-  // Deletes a textile
   Textile.findByIdAndRemove(req.params.id)
     .then((textileDocument) => {
       // res.sendStatus(204)
