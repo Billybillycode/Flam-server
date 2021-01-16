@@ -1,92 +1,69 @@
 const express = require("express");
 const router = express.Router();
-const textile = require("../models/Textile");
-const uploader = require("../config/cloudinary");
-const requireAuth = require("../middlewares/requireAuth"); // Route protection middleware : )
+const Textile = require("../models/Textile");
 
+// http://localhost:4000/api/textiles
 router.get("/", (req, res, next) => {
-  Textile.find({})
-    .populate("id_user") // Gives us the author's id (id_user) object document instead of just the id : )
+  // Get all the textiles
+  Textile.find()
     .then((textileDocuments) => {
       res.status(200).json(textileDocuments);
     })
-    .catch(next); // cf app.js error handling middleware
-  // same as below
-  //.catch(error => next(error))
+    .catch((error) => {
+      next(error);
+    });
 });
 
-router.post("/", requireAuth, uploader.single("image"), (req, res, next) => {
-  const updateValues = { ...req.body };
-
-  if (req.file) {
-    updateValues.image = req.file.path;
-  }
-
-  updateValues.id_user = req.session.currentUser; // Retrieve the authors id from the session.
-
-  Textile.create(updateValues)
-    .then((textileDocument) => {
-      textileDocument
-        .populate("id_user")
-        .execPopulate() // Populate on .create() does not work, but we can use populate() on the document once its created !
-        .then((textile) => {
-          console.log("here");
-          res.status(201).json(textile); // send the populated document.
-        })
-        .catch(next);
-    })
-    .catch(next);
-});
-
-router.patch(
-  "/:id",
-  requireAuth,
-  uploader.single("image"),
-  (req, res, next) => {
-    const textile = { ...req.body };
-
-    Textile.findById(req.params.id)
-      .then((textileDocument) => {
-        if (!textileDocument)
-          return res.status(404).json({ message: "textile not found" });
-        if (textileDocument.id_user.toString() !== req.session.currentUser) {
-          return res
-            .status(403)
-            .json({ message: "You are not allowed to update this document" });
-        }
-
-        if (req.file) {
-          textile.image = req.file.secure_url;
-        }
-
-        Textile.findByIdAndUpdate(req.params.id, textile, { new: true })
-          .populate("id_user")
-          .then((updatedDocument) => {
-            return res.status(200).json(updatedDocument);
-          })
-          .catch(next);
-      })
-      .catch(next);
-  }
-);
-
-router.delete("/:id", requireAuth, (req, res, next) => {
+// http://localhost:4000/api/textiles/{some-id}
+router.get("/:id", (req, res, next) => {
+  //Get one specific textile
   Textile.findById(req.params.id)
     .then((textileDocument) => {
-      if (!textileDocument) {
-        return res.status(404).json({ message: "textile not found" });
-      }
-      if (textileDocument.id_user.toString() !== req.session.currentUser) {
-        return res.status(403).json({ message: "You can't delete this textile" });
-      }
-
-      Textile.findByIdAndDelete(req.params.id)
-        .then(() => {
-          return res.sendStatus(204);
-        })
-        .catch(next);
+      res.status(200).json(textileDocument);
     })
-    .catch(next);
+    .catch((error) => {
+      next(error);
+    });
+});
+
+// http://localhost:4000/api/textiles/{some-id}
+router.patch("/:id", (req, res, next) => {
+  // Update a specific textile
+  Textile.findByIdAndUpdate(req.params.id, req.body, { new: true })
+    .then((textileDocument) => {
+      res.status(200).json(textileDocument);
+      // There's a trap !
+    })
+    .catch((error) => {
+      next(error);
+    });
+});
+
+// http://localhost:4000/api/textiles
+router.post("/", (req, res, next) => {
+  // Create a textile
+  Textile.create(req.body)
+    .then((textileDocument) => {
+      res.status(201).json(textileDocument);
+    })
+    .catch((error) => {
+      next(error);
+    });
+});
+
+// http://localhost:4000/api/textiles/{some-id}
+router.delete("/:id", (req, res, next) => {
+  // Deletes a textile
+  Textile.findByIdAndRemove(req.params.id)
+    .then((textileDocument) => {
+      // res.sendStatus(204)
+      res.status(204).json({
+        message: "Successfuly deleted !",
+      });
+    })
+    .catch((error) => {
+      next(error);
+    });
 });
 
 module.exports = router;

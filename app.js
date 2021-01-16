@@ -38,9 +38,11 @@ app.use(function (req, res, next) {
   next();
 });
 
-/**
- * Routes
- */
+const exercisesRouter = require('./routes/exercises');
+
+
+ app.use("/api/textiles", require("./routes/Textile"));
+ app.use('/exercises', exercisesRouter);
 
 const authRouter = require("./routes/auth");
 
