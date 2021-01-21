@@ -39,14 +39,12 @@ app.use(function (req, res, next) {
 });
 
 //Routes
-const indexRouter = require("./routes/index");
 const authRouter = require("./routes/auth");
 const usersRouter = require("./routes/user");
 const textilesRouter = require("./routes/textile");
 const burgerRouter = require("./routes/burgers");
 //
 //
-app.use("", indexRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/user", usersRouter);
 app.use("/api/textiles", textilesRouter);
