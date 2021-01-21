@@ -41,13 +41,13 @@ app.use(function (req, res, next) {
 //Routes
 const authRouter = require("./routes/auth");
 const usersRouter = require("./routes/user");
-const textilesRouter = require("./routes/textile");
+// const textilesRouter = require("./routes/textile");
 const burgerRouter = require("./routes/burgers");
 //
 //
 app.use("/api/auth", authRouter);
 app.use("/api/user", usersRouter);
-app.use("/api/textiles", textilesRouter);
+// app.use("/api/textile", textilesRouter);
 app.use("/api/burgers", burgerRouter);
 
 if (process.env.NODE_ENV === "production") {
