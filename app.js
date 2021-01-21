@@ -42,14 +42,22 @@ app.use(function (req, res, next) {
 const indexRouter = require("./routes/index");
 const authRouter = require("./routes/auth");
 const usersRouter = require("./routes/user");
-const itemRouter = require("./routes/textiles");
+const textilesRouter = require("./routes/textile");
+const burgerRouter = require("./routes/burgers");
 //
 //
-app.use("/", indexRouter);
+app.use("", indexRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/user", usersRouter);
-app.use("/api/textiles", itemRouter);
+app.use("/api/textiles", textilesRouter);
+app.use("/api/burgers", burgerRouter);
 
+if (process.env.NODE_ENV === "production") {
+  app.use("*", (req, res, next) => {
+    // If no routes match, send them the React HTML.
+    res.sendFile(__dirname + "/public/index.html");
+  });
+}
 
 // 404 Middleware
 app.use((req, res, next) => {

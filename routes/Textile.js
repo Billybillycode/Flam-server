@@ -71,11 +71,11 @@ router.post("/", requireAuth, uploader.single("image"), (req, res, next) => {
   updateValues.id_user = req.session.currentUser;
 
   Textile.create(updateValues)
-    .then((plantDocument) => {
+    .then((textileDocument) => {
       textileDocument
         .populate("id_user")
         .execPopulate() 
-        .then((plant) => {
+        .then((textile) => {
           console.log("here");
           res.status(201).json(textile); 
         })

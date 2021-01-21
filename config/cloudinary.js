@@ -10,7 +10,7 @@ cloudinary.config({
 
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
-  folder: "Titishirt",
+  folder: "Titishiirt",
   allowedFormats: ["jpg", "png"],
   filename: function (req, file, cb) {
     cb(null, file.originalname);
